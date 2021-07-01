@@ -1,23 +1,27 @@
 <div style="font-size:500%;font-weight:bold"> </div>
 
-## Amazon SageMaker Data Wrangler - Diabetic Patient Readmission Prediction Workshop
+# Amazon SageMaker Data Wrangler - Diabetic Patient Readmission Prediction
 
-In this Workshop, you will be running machine learning workflow with Amazon SageMaker Data Wrangler and Amazon SageMaker features using a HCLS dataset.
+Patient readmission to hospital after prior visits for the same disease results in additional burden on healthcare providers and health system. Being able to understand, and predict readmission allows providers to create a better treatment plans and care. Reduction in cost is another benefit of such predictive modeling. In this example, we show how we prepare a machine learning dataset and build a predictive model using a diabetic patient readmission dataset that captures 10 years (1999-2008) of clinical care at 130 US hospitals and integrated delivery networks in Amazon SageMaker Studio Data Wrangler.
 
-Here are the high-level activities ::
+[Amazon SageMaker Data Wrangler](https://aws.amazon.com/sagemaker/data-wrangler/) in Amazon SageMaker Studio is a tool designed to allow data scientist quickly and iteratively explore and transform data for machine learning use cases. This project showcases how you can build a machine learning data transformation pipeline without writing sophisticated coding and create a model training, feature store or a ML pipeline with reproducibility for a diabetic patient readmission prediction use case.
 
-- [1. Load UCI Source Dataset into your S3 bucket](#1-source-dataset)
-- [2. Design your DataWrangler flow file](#2-design-your-dataWrangler-flow-file)
-- [3. Processing & Training Jobs for Model building](#3-processing-and-training-jobs-for-model-building)
-- [4. Host trained Model for real-time inference](#4-Host-trained-Model-for-real-time-inference)
+In this example, you will be running machine learning workflow with Amazon SageMaker Data Wrangler and Amazon SageMaker features using a HCLS dataset.
 
-# 1. Source Dataset
+Here are the high-level activities:
+
+1. [Load UCI Source Dataset into your S3 bucket](#1-source-dataset)
+1. [Design your DataWrangler flow file](#2-design-your-dataWrangler-flow-file)
+1. [Processing & Training Jobs for Model building](#3-processing-and-training-jobs-for-model-building)
+1. [Host trained Model for real-time inference](#4-Host-trained-Model-for-real-time-inference)
+
+## 1. Source Dataset
 
 [UCI diabetic patient readmission dataset](https://archive.ics.uci.edu/ml/datasets/diabetes+130-us+hospitals+for+years+1999-2008). The dataset represents 10 years (1999-2008) of clinical care at 130 US hospitals and integrated delivery networks. It includes over 50 features representing patient and hospital outcomes.
 
-You will start by downloading the dataset and uploading it to a S3 bucket for you to run the Workshop. Please review and execute the code in [datawrangler_workshop_pre_requisite.ipynb](datawrangler_workshop_pre_requisite.ipynb). The data will be available in `s3://sagemaker-${region}-${account_number}/sagemaker/demo-diabetic-datawrangler/` if you leave everything default.
+You will start by downloading the dataset and uploading it to a S3 bucket for you to run the example. Please review and execute the code in [datawrangler_workshop_pre_requisite.ipynb](datawrangler_workshop_pre_requisite.ipynb). The data will be available in `s3://sagemaker-${region}-${account_number}/sagemaker/demo-diabetic-datawrangler/` if you leave everything default.
 
-# 2. Design your DataWrangler flow file
+## 2. Design your DataWrangler flow file
 
 ###  Data Wrangler flow overview and highlights
 
@@ -44,7 +48,7 @@ These are analyses created at different stage of the wrangling to serve as indic
 
 In this lab, we will perform data preprocessing using a combination of transformations described below to demonstrate the capability of Amazon SageMaker Data Wrangler. We will then train a XGBoost model to show you the process after data wrangling. We will then be hosting a trained model to SageMaker Hosted Endpoint for real-time inferencing.
 
-###  Walk through
+##  Walk through
 
 ### Create a new flow
 
@@ -378,7 +382,7 @@ We are now ready to export dataflow for further processing.
 
 ![import_data](images/sample-processing-notebook.png)
 
-# 3. Processing and Training Jobs for Model building
+## 3. Processing and Training Jobs for Model building
 
 ###  Pre-Processing Job submission
 
@@ -396,7 +400,7 @@ We are now ready to export dataflow for further processing.
 ![import_data](images/preprocessing-job-status.png)
 
 
-###  Train a model with SageMaker
+###  Train a model with Amazon SageMaker
 
 1) Now that the data has been processed, you may want to train a model using the data.  The same notebook has sample steps to train an XGBoost algorithm.  Since our use case is binary classification, we need to change the `objective` inside the sample training steps as shown below.
 
@@ -411,7 +415,7 @@ We are now ready to export dataflow for further processing.
 
 ![import_data](images/jobs-monitor.png)
 
-# 4. Host trained Model for real time inference
+## 4. Host trained Model for real time inference
 
 ###  Deploy model for real-time inference
 
@@ -429,4 +433,4 @@ This is a simple notebook with 2 cells - First cell has code for deploying your 
 
 ###  Conclusion
 
-This concludes the workshop.  In this workshop you have learnt how to use SageMaker Data Wrangler capability to create data preprocessing, feature engineering steps using simple to use Data Wrangler GUI.  We then used the generated notebook to submit a SageMaker managed processing job to perform the data preparation using our data flow file.  Later we saw how to train a simple XBOOST algorithm using our processed dataset.  In the end we hosted our trained model and ran inferences against synthetic test data.
+This concludes the example.  In this example you have learnt how to use SageMaker Data Wrangler capability to create data preprocessing, feature engineering steps using simple to use Data Wrangler GUI.  We then used the generated notebook to submit a SageMaker managed processing job to perform the data preparation using our data flow file.  Later we saw how to train a simple XBOOST algorithm using our processed dataset.  In the end we hosted our trained model and ran inferences against synthetic test data.
