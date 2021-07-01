@@ -4,7 +4,7 @@
 
 Patient readmission to hospital after prior visits for the same disease results in additional burden on healthcare providers and health system. Being able to understand, and predict readmission allows providers to create a better treatment plans and care. Reduction in cost is another benefit of such predictive modeling. In this example, we show how we prepare a machine learning dataset and build a predictive model using a diabetic patient readmission dataset that captures 10 years (1999-2008) of clinical care at 130 US hospitals and integrated delivery networks in Amazon SageMaker Studio Data Wrangler.
 
-[Amazon SageMaker Data Wrangler](https://aws.amazon.com/sagemaker/data-wrangler/) in Amazon SageMaker Studio is a tool designed to allow data scientist quickly and iteratively explore and transform data for machine learning use cases. This project showcases how you can build a machine learning data transformation pipeline without writing sophisticated coding and create a model training, feature store or a ML pipeline with reproducibility for a diabetic patient readmission prediction use case.
+[Amazon SageMaker Data Wrangler](https://aws.amazon.com/sagemaker/data-wrangler/) in Amazon SageMaker Studio is a tool designed to allow data scientist quickly and iteratively explore and transform data for machine learning use cases. This example showcases how you can build a machine learning data transformation pipeline without writing sophisticated coding and create a model training, feature store or a ML pipeline with reproducibility for a diabetic patient readmission prediction use case.
 
 In this example, you will be running machine learning workflow with Amazon SageMaker Data Wrangler and Amazon SageMaker features using a HCLS dataset.
 
