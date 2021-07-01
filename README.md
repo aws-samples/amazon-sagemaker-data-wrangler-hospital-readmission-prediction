@@ -370,10 +370,12 @@ We are now ready to export dataflow for further processing.
 
 2) Click `Export step` to reveal the export options.  You currently have 4 export options
 
-    a) `Save to S3` Save to S3 using a SageMaker Processing Job.
-    b) `Pipeline` exports a Jupyter Notebook that creates a Pipeline with your data flow.
-    c) `Python Code` exports your data flow to python code.
-    d) `Feature Store` exports a Jupyter Notebook that creates a Feature Store feature group and adds features to an offline or online feature store.
+- `Save to S3` Save the data to an S3 bucket using a [Amazon SageMaker Processing](https://docs.aws.amazon.com/sagemaker/latest/dg/processing-job.html) Job.
+- `Pipeline` exports a Jupyter Notebook that creates an [Amazon SageMaker Pipeline](https://aws.amazon.com/sagemaker/pipelines/) with your data flow.
+- `Python Code` exports your data flow to python code.
+- `Feature Store` exports a Jupyter Notebook that creates an [Amazon SageMaker Feature Store](https://aws.amazon.com/sagemaker/feature-store/) feature group and adds features to an offline or online feature store.
+    
+   You can find more information for each export option in this [page](https://docs.aws.amazon.com/sagemaker/latest/dg/data-wrangler-data-export.html).
 
 
 ![import_data](images/new_export_options.png)
@@ -402,7 +404,7 @@ We are now ready to export dataflow for further processing.
 
 ###  Train a model with Amazon SageMaker
 
-1) Now that the data has been processed, you may want to train a model using the data.  The same notebook has sample steps to train an XGBoost algorithm.  Since our use case is binary classification, we need to change the `objective` inside the sample training steps as shown below.
+1) Now that the data has been processed, you may want to train a model using the data.  The same notebook has sample steps to train a model using [Amazon SageMaker built-in XGBoost algorithm](https://docs.aws.amazon.com/sagemaker/latest/dg/xgboost.html).  Since our use case is binary classification, we need to change the `objective` to `"binary:logistic"` inside the sample training steps as shown below.
 
 
 ![import_data](images/change-objective.png)
@@ -433,4 +435,4 @@ This is a simple notebook with 2 cells - First cell has code for deploying your 
 
 ###  Conclusion
 
-This concludes the example.  In this example you have learnt how to use SageMaker Data Wrangler capability to create data preprocessing, feature engineering steps using simple to use Data Wrangler GUI.  We then used the generated notebook to submit a SageMaker managed processing job to perform the data preparation using our data flow file.  Later we saw how to train a simple XBOOST algorithm using our processed dataset.  In the end we hosted our trained model and ran inferences against synthetic test data.
+This concludes the example.  In this example you have learnt how to use SageMaker Data Wrangler capability to create data preprocessing, feature engineering steps using simple to use Data Wrangler GUI.  We then used the generated notebook to submit a SageMaker managed processing job to perform the data preparation using our data flow file.  Later we saw how to train a simple XGBoost algorithm using our processed dataset.  In the end we hosted our trained model and ran inferences against synthetic test data.
