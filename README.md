@@ -29,7 +29,7 @@ This project comes with a pre-built Data Wrangler flow file that can be customiz
 
 ![dw-flow](images/data_wrangler_flow.png)
 
-It has multiple files from S3 loaded in: `diabetic_data_hospital_visits.csv`, `diabetic_data_demographic.csv` and `diabetic_data_labs.csv` for demonstration. It performs a inner join between the tables in `diabetic_data_hospital_visits.csv` and `diabetic_data_demographic.csv` by `encounter_id`. It has 22 transformation steps applied to process the data to meet the following requirements:
+It has multiple files from S3 loaded in: `diabetic_data_hospital_visits.csv`, `diabetic_data_demographic.csv` and `diabetic_data_labs.csv` for demonstration. It performs a inner join between the tables in `diabetic_data_hospital_visits.csv` and `diabetic_data_demographic.csv` by `encounter_id`. It has 28 transformation steps applied to process the data to meet the following requirements:
 
 * no duplicate columns
 * no duplicate entries
@@ -38,13 +38,10 @@ It has multiple files from S3 loaded in: `diabetic_data_hospital_visits.csv`, `d
 * ordinally encode the age feature
 * normalization (Standard scaler)
 * Custom Transformation (Feature Store - EventTime needed)
-* Analysis (Quick Model)
+* Analysis (Quick Model, Histogram)
 * ready for ML training (Export notebook steps)
-* Hosting steps need to be added here
-* Model monitoring
-* Extract test-dataset after transformation
 
-These are analyses created at different stage of the wrangling to serve as indication of the value these wrangling steps add. Most noticeably the Quick Model tells us that patient readmission prediction increases from X to Y after performing additional steps between 13 and 22 (in [datawrangler_diabetes_readmission.flow](datawrangler_diabetes_readmission.flow)).
+These are analyses created at different stage of the wrangling to serve as indication of the value these wrangling steps add. Most noticeably the Quick Model tells us that patient readmission prediction increases F1 score after performing transformation steps between 1 and 28 (in [datawrangler_diabetes_readmission.flow](datawrangler_diabetes_readmission.flow)).  Data Scientists can use `Quick Model` analysis to perform iterative experimentation leading to efficient feature engineering for ML.
 
 In this lab, we will perform data preprocessing using a combination of transformations described below to demonstrate the capability of Amazon SageMaker Data Wrangler. We will then train a XGBoost model to show you the process after data wrangling. We will then be hosting a trained model to SageMaker Hosted Endpoint for real-time inferencing.
 
@@ -99,6 +96,57 @@ Click the + sign on the Data-types icon for `diabetic_data_hospital_visits.csv` 
 5) Click Add for the join configuration to be added to the data-flow
 
 ![import_data](images/join_updated_dataflow.png)
+
+###  Analysis
+
+Before we apply any transformations on the input source, let's perform a quick analysis of the dataset. SageMaker Data Wrangler provides built-in Analysis types like `Histogram` `Scatter Plot` `Target Leakage` `Bias Report` `Histogram` & `Quick Model`.  You can find all types details [SageMaker Data Wrangler Analyses](https://docs.aws.amazon.com/sagemaker/latest/dg/data-wrangler-analyses.html).  
+Let's touch on 2 of these types to get feel of the potential.
+
+### Histogram
+
+You can use histograms to see the counts of feature values for a specific feature. You can inspect the relationships between features using the Color by option. You can also use the Facet by feature to create histograms of one column, for each value in another column.
+
+1) Click + sign next to Join flow icon and choose `Add analysis`
+
+![import_data](images/add_analysis_screen.png)
+
+2) Select `Histogram` from the list of Analysis types on the right panel.
+
+![import_data](images/histogram_option.png)
+
+3) Give a name to your analysis and select the `X axis` as `race`, `Color by` as `age` & `Facet by` as `gender`.  Which means we want to plot histograms by `race` with `age` factor reflected by color legend and also faceted by `gender`.
+
+![import_data](images/histogram_configuration.png)
+
+4) Click `Preview` and wait for the model to be results to be displayed on the screen
+
+![import_data](images/histogram_results.png)
+
+5) Click `Create` button to add the histogram analysis to the data flow.
+
+### Quick Model
+
+Let's explore `Quick Model` transformation. `Quick Model` visualization helps to quickly evaluate your data and produce importance scores for each feature. A feature importance score indicates how useful a feature is at predicting a target label. The feature importance score is between [0, 1] and a higher number indicates that the feature is more important to the whole dataset. On the top of the quick model chart, there is a model score. A classification problem shows an F1 score. A regression problem has a mean squared error (MSE) score.
+
+1) Click + sign next to Join flow icon and choose `Add analysis`
+
+![import_data](images/add_analysis_screen.png)
+
+2) Select `Quick Model` from the list of Analysis types on the right panel.
+
+![import_data](images/analysis_quick_model_option.png)
+
+3) Give a name to your analysis and select the target label in `Label` field.
+
+![import_data](images/initial_quick_model_configuration.png)
+
+4) Click `Preview` and wait for the model to be results to be displayed on the screen
+
+![import_data](images/initial_quick_model_result.png)
+
+Here we see that the Quick Model has given 0.527 (your individual score may be slightly different) F1 score on the current state of the dataset.  Remember, we haven't applied any data transformations.  We'll revisit `Quick Model` after we apply a few data transformations and assess whether or not those transformations improve F1 score.
+
+5) Click `Create` button to add the quick model analysis to the data flow.
 
 ### Transformations
 
@@ -281,19 +329,42 @@ df["medical_specialty"]=df["medical_specialty"].str.replace("?","Other")
 
 ![import_data](images/scaler_add_diag1.png)
 
-###  One-hot Encoding for target label feature
+4) Repeat above steps 1 through 3 to apply scaler for `diag_2_imputed` & `diag_3_imputed` feature as shown below
+
+![import_data](images/diag_2_imputed_scaler.png)
+
+![import_data](images/diag_3_imputed_scaler.png)
+
+
+###  Transform the target Label
+
+Our Target Label needs a couple transformations to be effective.  Let's use `Search and Edit` Transform to convert string values to binary values.
 
 1) Click + sign next to Join flow icon and choose `Add Transform`
 
 ![import_data](images/add_transform_screen.png)
 
-2) Pick `Encode categorical` from the list of transforms on the right panel. Select `One-hot encode` and `readmission` for input column.  For `Output style`, choose `Columns`.  After filling the fields click `Preview` followed by `Add`
+2) Pick `Search and edit` from the list of transforms on the right panel. Select `Find and replace substring` as shown below
 
-![import_data](images/1hot_readmitted.png)
+![import_data](images/readmitted_parser_config.png)
 
-###  Position the target label as first column to utilize xgboost algorithm
+3) Select the target column `readmitted` for `Input column` and use `>30|<30` regex for Pattern.  For the `Replacement String` use `1`.  Also, give a name to your new `output column` as `readmitted_parser_1`.  So, here we are converting all the values that have either `>30` or `<30` values to `1`.  After making your config selections, hit `Preview` to review the converted column
 
-We will be using xgboost built-in algorith to train the model using our dataset.  One of the pre-requisite for using xgboost algorithm is to have the target label as first column.  Let's do that.
+![import_data](images/readmitted_parser_1.png)
+
+4) Once reviewed, click Add to add the transform to your data-flow.
+
+5) Let's repeat the same to convert `NO` in the new target column to `0`.  Select the target column `readmitted_parser_1` for `Input column` and use `NO` regex for Pattern.  For the `Replacement String` use `0`.  Also, give a name to your new `output column` as `readmitted_parser_2`. After making your config selections, hit `Preview` to review the converted column
+
+![import_data](images/readmitted_parser_2.png)
+
+
+6) Once reviewed, click Add to add the transform to your data-flow.  Now our target label is ready for ML.
+
+
+###  Position the target label as first column to utilize XGBoost algorithm
+
+We will be using XGBoost built-in SageMaker algorithm to train the model using our dataset.  For CSV training, the algorithm assumes that the target label is in the first column. Let's do that.
 
 1) Click + sign next to Join flow icon and choose `Add Transform`
 
@@ -323,9 +394,19 @@ We will be using xgboost built-in algorith to train the model using our dataset.
 
 4) Click `Preview` to preview the changes to the data set.  Then `Add` to add the changes to flow file.
 
-5) Repeat above steps 1 through 4 for other redundant columns `race` `diag_1` `diag_2` `diag_3` `readmitted`, as shown below
+5) Repeat above steps 1 through 4 for other redundant columns `race` `gender` `diag_1` `diag_2` `diag_3` `diag_1_imputed` `diag_2_imputed` `diag_3_imputed`  `readmitted` `readmitted_parser_1` as shown below
+
 
 ![import_data](images/drop_race.png)
+
+
+![import_data](images/drop_gender.png)
+
+
+![import_data](images/drop_diag_1.png)
+
+
+![import_data](images/drop_diag_2.png)
 
 
 ![import_data](images/drop_diag_3.png)
@@ -334,9 +415,21 @@ We will be using xgboost built-in algorith to train the model using our dataset.
 ![import_data](images/drop_readmitted.png)
 
 
+![import_data](images/drop_diag_1_imputed.png)
+
+
+![import_data](images/drop_diag_2_imputed.png)
+
+
+![import_data](images/drop_diag_3_imputed.png)
+
+
+![import_data](images/drop_readmitted_parser_1.png)
+
+
 ###  Quick Model
 
-Now that we have transformed our initial dataset, Let's explore `Quick Model` transformation. This transform option allows you to visualize the target model accuracy by dynamically running the model on the fly with the transformed data.  This allows you to quickly see the feature relationship weightage on target prediction
+Now that we have transformed our initial dataset, Let's re-explore `Quick Model` transformation. This transform option allows you to visualize the target model accuracy by dynamically running the model on the fly with the transformed data.  This allows you to quickly see the feature relationship weightage on target prediction.
 
 1) Click + sign next to Join flow icon and choose `Add analysis`
 
@@ -348,11 +441,15 @@ Now that we have transformed our initial dataset, Let's explore `Quick Model` tr
 
 3) Give a name to your analysis and select the target label in `Label` field.
 
-![import_data](images/analysis_quick_model_configuration.png)
+![import_data](images/transformed_quick_model_config.png)
 
 4) Click `Preview` and wait for the model to be results to be displayed on the screen
 
-![import_data](images/analysis_quick_model_result.png)
+![import_data](images/transformed_quick_model_preview.png)
+
+
+The resulting `Quick Model` F1 score shows `0.643` with the transformed dataset.  This is an improvement from the original F1 score of `0.527`.  
+As you can see, Data Wrangler helped us to quickly experiment the transformations of input features and improve our model accuracy (without us building any ML models).  Using this feature, Data Scientists can iterate through applicable transformations until they see desired transformed dataset that would potentially lead to business expectations.
 
 5) Click `Create` button to add the quick model analysis to the data flow.
 
@@ -374,7 +471,7 @@ We are now ready to export dataflow for further processing.
 - `Pipeline` exports a Jupyter Notebook that creates an [Amazon SageMaker Pipeline](https://aws.amazon.com/sagemaker/pipelines/) with your data flow.
 - `Python Code` exports your data flow to python code.
 - `Feature Store` exports a Jupyter Notebook that creates an [Amazon SageMaker Feature Store](https://aws.amazon.com/sagemaker/feature-store/) feature group and adds features to an offline or online feature store.
-    
+
    You can find more information for each export option in this [page](https://docs.aws.amazon.com/sagemaker/latest/dg/data-wrangler-data-export.html).
 
 
@@ -386,7 +483,7 @@ We are now ready to export dataflow for further processing.
 
 ## 3. Processing and Training Jobs for Model building
 
-###  Pre-Processing Job submission
+###  Processing Job submission
 
 1) We are now ready to submit a SageMaker Processing Job using the data flow file.  Run all the cells upto `Create Processing Job`.  This cell `Create Processing Job` will trigger a new SagaMaker processing job by provisioning managed infrastructure and running the required DataWrangler docker container on that infrastructure.
 
